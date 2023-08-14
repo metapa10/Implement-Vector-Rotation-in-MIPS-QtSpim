@@ -1,0 +1,110 @@
+.data
+
+r_m: .double 0.0
+r_y: .double 1.0
+prob_a: .word -90
+
+print0: .asciiz "a = ("
+print1: .asciiz ","
+print2: .asciiz ") \n"
+r:	.asciiz "r\n"
+addition:	.asciiz "+"
+
+
+h: .double 1.0
+l: .double 0.0
+qt_x_180: .double 0.017453292519943
+a: .double 0.7853981633974483, 0.46364760900080615, 0.24497866312686414, 0.12435499454676144, 0.06241880999595735, 0.031239833430268277, 0.015623728620476831, 0.007812341060101111, 0.0039062301319669718, 0.0019531225164788188, 0.0009765621895593195, 0.0004882812111948983, 0.00024414062014936177, 0.00012207031189367021, 0.00006103515617420877, 0.000030517578115526096
+p_m: .double -1.0
+p_n: .double 1.0
+num: .double 1.0
+P: .double 1.6424840657522373
+
+num_zero: .double 0.0
+num_two: .double 2.0
+res_actual: .double 0.0
+res_picture: .double 0.0
+.text
+.globl main
+
+compute: 
+    mul.d $f9, $f7, $f5
+    addi $t1, $t1, 1
+    addi $t2, $t2, 8
+    bne $t1, $t2, cordic
+    div.d $f0, $f0, $f23
+
+cordic:
+    c.le.d $f3, $f20
+    bc1t negative1
+    ldc1 $f6, p_n
+    j compute
+
+
+negative1:
+    ldc1 $f6, p_m
+
+complex_mul: 
+    ldc1 $f9, a_x
+    ldc1 $f11, a_y
+    mul.d $f13, $f9, $f0 
+    mul.d $f15, $f11, $f1 
+    add.d $f29, $f13, $f15 
+
+
+    sdc1 $f17, result_real
+    sdc1 $f29, result_img
+
+
+main:
+    li $t1, 0
+    li $t2, 16   
+    
+    ldc1 $f0, x  
+    ldc1 $f2, y 
+    lw $t3, prob_a
+    cvt.d.w $f25, $f23
+    ldc1 $f27, qt_x_180
+    ldc1 $f7, num
+    ldc1 $f19, num_zero
+    ldc1 $f21, num_two
+    ldc1 $f23, P
+    la $t4, a
+
+
+print:
+    li  $v0, 4
+    la  $a0, print0
+	syscall
+
+    li $v0, 3
+    ldc1 $f11, r_m
+    syscall
+
+    li  $v0, 4
+    la  $a0, print1
+	syscall
+
+    li $v0, 3
+    ldc1 $f11, r_y
+    syscall
+
+    li  $v0, 4
+    la  $a0, print2
+	syscall
+
+    li $v0, 1
+    lw $a0, prob_a
+    syscall
+
+    li	$v0, 3	
+	ldc1 $f11, res_actual
+	syscall
+	li $v0, 4	
+	syscall
+    la  $a0, i
+	syscall
+
+    #End
+	li	$v0, 10			  
+	syscall
